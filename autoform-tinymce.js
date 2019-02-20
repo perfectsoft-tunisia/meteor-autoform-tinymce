@@ -1,13 +1,26 @@
-Template.autoformTinyMCE.onRendered(function() {
-    var initOptions = this.data || {};
-    var id = this.firstNode.id;
-    initOptions.selector = '#' + id;
-    initOptions.skin_url = Meteor.absoluteUrl('packages/teamon_tinymce/skins/lightgray');
-    tinymce.init(initOptions);
+Template.autoformTinyMCE.onCreated(function() {
+    this.id = this.data.atts ? (this.data.atts.id || Math.random().toString(36).substring(7)) : Math.random().toString(36).substring(7);
+});
 
-    var editor = tinymce.get(id);
-    this.autorun(function() {
-        editor.setContent(Template.currentData().value);
+Template.autoformTinyMCE.onRendered(function() {
+    let options = this.data.atts.tinyMCEOptions || {};
+    options.selector = '#' + this.id;
+
+    tinymce.init(options);
+
+
+    var editor = tinymce.get(this.id);
+
+    editor.once('init', () => {
+        if (this.data.value) {
+            editor.setContent(this.data.value);
+        }
+    });
+
+    
+    this.autorun(() => {
+        const data = Template.currentData();
+        editor.setContent(data.value);
     });
 });
 
@@ -15,17 +28,22 @@ Template.autoformTinyMCE.helpers({
     schemaKey: function() {
         return this.atts['data-schema-key'];
     },
-    text: function() {
-        return Template.currentData().value;
-    },
     id: function() {
-        return Math.random().toString(36).substring(7);
+        return Template.instance().id;
+    }
+});
+
+Template.autoformTinyMCE.onDestroyed(function() {
+    tinymce.get(this.id)
+    if (editor) {
+        editor.destroy();
     }
 });
 
 AutoForm.addInputType('tinyMCE', {
     template: "autoformTinyMCE",
     valueOut: function() {
-        return this.val();
+        var id = this.attr('id');
+        return tinymce.get(id).getContent();
     }
 });
