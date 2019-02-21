@@ -34,7 +34,7 @@ Template.autoformTinyMCE.helpers({
 });
 
 Template.autoformTinyMCE.onDestroyed(function() {
-    tinymce.get(this.id)
+    var editor = tinymce.get(this.id)
     if (editor) {
         editor.destroy();
     }
