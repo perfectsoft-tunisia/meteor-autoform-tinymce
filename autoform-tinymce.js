@@ -6,18 +6,23 @@ Template.autoformTinyMCE.onRendered(function() {
     let options = this.data.atts.tinyMCEOptions || {};
     options.selector = '#' + this.id;
 
-    tinymce.init(options);
+    options.setup = function (editor) {
+        editor.hide();
+    };
 
+    tinymce.init(options);
 
     var editor = tinymce.get(this.id);
 
     editor.once('init', () => {
+        editor.initialized = true;
+        editor.show();
         if (this.data.value) {
             editor.setContent(this.data.value);
         }
     });
 
-    
+
     this.autorun(() => {
         const data = Template.currentData();
         editor.setContent(data.value);
@@ -36,7 +41,7 @@ Template.autoformTinyMCE.helpers({
 Template.autoformTinyMCE.onDestroyed(function() {
     var editor = tinymce.get(this.id)
     if (editor) {
-        editor.destroy();
+        editor.remove();
     }
 });
 
