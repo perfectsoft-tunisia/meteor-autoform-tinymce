@@ -4,15 +4,16 @@ Template.autoformTinyMCE.onCreated(function() {
 
 Template.autoformTinyMCE.onRendered(function() {
     let options = this.data.atts.tinyMCEOptions || {};
+
     options.selector = '#' + this.id;
 
     options.setup = function (editor) {
         editor.hide();
     };
 
-    tinymce.init(options);
+    window.tinymce.init(options);
 
-    var editor = tinymce.get(this.id);
+    var editor = window.tinymce.get(this.id);
 
     editor.once('init', () => {
         editor.initialized = true;
@@ -26,6 +27,13 @@ Template.autoformTinyMCE.onRendered(function() {
     this.autorun(() => {
         const data = Template.currentData();
         editor.setContent(data.value);
+        window.editor = editor;
+
+        if (data.atts && (data.atts.readOnly || data.atts.readonly)) {
+            editor.setMode('readonly');
+        } else {
+            editor.setMode('');
+        }
     });
 });
 
@@ -39,7 +47,7 @@ Template.autoformTinyMCE.helpers({
 });
 
 Template.autoformTinyMCE.onDestroyed(function() {
-    var editor = tinymce.get(this.id)
+    var editor = window.tinymce.get(this.id);
     if (editor) {
         editor.remove();
     }
@@ -49,6 +57,6 @@ AutoForm.addInputType('tinyMCE', {
     template: "autoformTinyMCE",
     valueOut: function() {
         var id = this.attr('id');
-        return tinymce.get(id).getContent();
+        return window.tinymce.get(id).getContent();
     }
 });
